@@ -164,9 +164,16 @@ class Config(Plugin):
                 persist=True, global_config=global_config)
 
     @classmethod
-    def config_set_password(cls, global_config=False):
+    def config_set_password(cls, password, global_config=False):
         cfg = confighelper.get_config_helper()
-        cfg.prompt_for_password(prompt=False, global_config=global_config)
+        user = cfg.get(section='RHHelp', option='user')
+        if user:
+                cfg.set(section='RHHelp', option='password', 
+			value=cfg.pw_encode(password, user),
+                        persist=True, global_config=global_config)
+        else:
+                cfg.prompt_for_password(prompt=False,
+			global_config=global_config)
 
     @classmethod
     def config_get_debug(cls):
@@ -217,10 +224,16 @@ class Config(Plugin):
                 persist=True, global_config=global_config)
 
     @classmethod
-    def config_set_proxy_password(cls, global_config=False):
+    def config_set_proxy_password(cls, proxy_password, global_config=False):
         cfg = confighelper.get_config_helper()
-        cfg.prompt_for_proxy_password(prompt=False,
-                                      global_config=global_config)
+        user = cfg.get(section='RHHelp', option='user')
+        if user:
+                cfg.set(section='RHHelp', option='proxy_password',
+			value=cfg.pw_encode(proxy_password, user),
+                        persist=True, global_config=global_config)
+        else:
+        	cfg.prompt_for_proxy_password(prompt=False,
+			global_config=global_config)
 
     @classmethod
     def config_get_ssl_ca(cls):
@@ -299,14 +312,6 @@ class Config(Plugin):
                 if self._options['unset']:
                     cfg = confighelper.get_config_helper()
                     cfg.remove_option(section, option, global_config)
-
-                # 'password' is a special case: a one-arg set...
-                elif option == 'password':
-                    self.config_set_password(global_config=global_config)
-
-                # 'proxy_password' is the other special case: a one-arg set...
-                elif option == 'proxy_password':
-                    self.config_set_proxy_password(global_config=global_config)
 
                 # is this a 'set' or a 'get'?
                 # 'gets' have one arg...
